@@ -15,18 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace libtextsecure.push.exceptions
 {
     public class NotFoundException : NonSuccessfulResponseCodeException
     {
-        public NotFoundException(String s)
-            :base (s)
+        public NotFoundException(string s) : base (s)
         {
         }
     }

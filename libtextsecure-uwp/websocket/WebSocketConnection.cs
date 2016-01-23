@@ -92,7 +92,7 @@ namespace libtextsecure.websocket
                 }
                 catch (Exception e)
                 {
-                    /*WebErrorStatus status = WebSocketError.GetStatus(e.GetBaseException().HResult);
+                    WebErrorStatus status = WebSocketError.GetStatus(e.GetBaseException().HResult);
 
                     switch (status)
                     {
@@ -109,7 +109,7 @@ namespace libtextsecure.websocket
                         default:
                             Debug.WriteLine("Error: " + status);
                             break;
-                    }*/
+                    }
                 }
                 Debug.WriteLine("WSC connected...");
             }

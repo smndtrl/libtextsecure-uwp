@@ -16,10 +16,6 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace libtextsecure.push.exceptions
 {
@@ -27,12 +23,10 @@ namespace libtextsecure.push.exceptions
     {
 
         public NonSuccessfulResponseCodeException()
-            : base()
         {
         }
 
-        public NonSuccessfulResponseCodeException(String s)
-            : base(s)
+        public NonSuccessfulResponseCodeException(string s) : base(s)
         {
         }
     }

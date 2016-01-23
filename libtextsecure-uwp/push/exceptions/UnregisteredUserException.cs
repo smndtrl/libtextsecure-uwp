@@ -16,27 +16,16 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace libtextsecure.push.exceptions
 {
     public class UnregisteredUserException : Exception
     {
-        private readonly String e164number;
+        public string E164Number { get; internal set; }
 
-        public UnregisteredUserException(String e164number, Exception exception)
-            : base(exception.Message)
-
+        public UnregisteredUserException(string e164Number, Exception exception) : base(exception.Message)
         {
-            this.e164number = e164number;
-        }
-
-        public String getE164Number()
-        {
-            return e164number;
+            this.E164Number = e164Number;
         }
     }
 }

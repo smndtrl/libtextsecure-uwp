@@ -16,27 +16,16 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace libtextsecure.push.exceptions
 {
     class NetworkFailureException : Exception
     {
-        private readonly String e164number;
+        public string E164Number { get; internal set; }
 
-        public NetworkFailureException(String e164number, Exception nested)
-                  : base(nested.Message)
+        public NetworkFailureException(string e164Number, Exception nested) : base(nested.Message)
         {
-
-            this.e164number = e164number;
-        }
-
-        public String getE164number()
-        {
-            return e164number;
+            this.E164Number = e164Number;
         }
     }
 }

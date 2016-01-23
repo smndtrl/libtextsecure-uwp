@@ -1,6 +1,6 @@
 REM MSBuild EXE path
 SET MSBuildPath="C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe"
-SET NuGetPath="C:\Program Files (x86)\NuGet\nuget.exe"
+SET NuGetPath="%USERPROFILE%\.nuget\nuget.exe"
 
 ECHO Did you adjust the version number (if this is a release)? Press ENTER to continue...
 PAUSE

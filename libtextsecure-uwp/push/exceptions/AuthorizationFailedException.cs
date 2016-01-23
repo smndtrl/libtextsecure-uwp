@@ -16,16 +16,12 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace libtextsecure.push.exceptions
 {
     public class AuthorizationFailedException : Exception
     {
-        public AuthorizationFailedException(String s)
+        public AuthorizationFailedException(string s)
             : base(s)
         {
 

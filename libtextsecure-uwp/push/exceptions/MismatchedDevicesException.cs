@@ -15,27 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace libtextsecure.push.exceptions
 {
     class MismatchedDevicesException : NonSuccessfulResponseCodeException
     {
 
-        private readonly MismatchedDevices mismatchedDevices;
+        public MismatchedDevices MismatchedDevices { get; internal set; }
 
         public MismatchedDevicesException(MismatchedDevices mismatchedDevices)
         {
-            this.mismatchedDevices = mismatchedDevices;
-        }
-
-        public MismatchedDevices getMismatchedDevices()
-        {
-            return mismatchedDevices;
+            this.MismatchedDevices = mismatchedDevices;
         }
     }
 }

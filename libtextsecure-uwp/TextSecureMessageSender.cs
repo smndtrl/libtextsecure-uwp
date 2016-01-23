@@ -16,22 +16,21 @@
  */
 
 using Google.ProtocolBuffers;
-using libaxolotl.state;
 using libtextsecure.messages;
 using libtextsecure.crypto;
 using libtextsecure.push;
 using libtextsecure.push.exceptions;
-using libtextsecure.src.api.crypto;
 using libtextsecure.util;
 using Strilanc.Value;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using libaxolotl;
 using static libtextsecure.push.TextSecureProtos;
-using libaxolotl.util;
 using libtextsecure.messages.multidevice;
 using System.Threading.Tasks;
+using libaxolotl.state;
+using libaxolotl.util;
+using libaxolotl;
 
 namespace libtextsecure
 {
@@ -340,12 +339,12 @@ namespace libtextsecure
                 catch (MismatchedDevicesException mde)
                 {
                     Debug.WriteLine(mde.Message, TAG);
-                    handleMismatchedDevices(socket, recipient, mde.getMismatchedDevices());
+                    handleMismatchedDevices(socket, recipient, mde.MismatchedDevices);
                 }
                 catch (StaleDevicesException ste)
                 {
                     //Log.w(TAG, ste);
-                    handleStaleDevices(recipient, ste.getStaleDevices());
+                    handleStaleDevices(recipient, ste.StaleDevices);
                 }
             }
 

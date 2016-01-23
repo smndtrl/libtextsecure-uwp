@@ -24,13 +24,14 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 
-namespace CustomExtensions {
+namespace CustomExtensions
+{
     public static class StringExtension
     {
         public static string ReplaceAll(this String str, string regex, string replacement)
         {
 
-            return Regex.Replace(str, regex, replacement) ;
+            return Regex.Replace(str, regex, replacement);
         }
     }
 }
@@ -49,7 +50,11 @@ namespace libtextsecure.util
 
         public static bool isValidNumber(String number)
         {
-            return (new Regex("^\\+[0-9]{10,}").Match(number)).Success;
+            return new Regex("^\\+[0-9]{10,}").Match(number).Success ||
+                new Regex("^\\+296[0-9]{6}").Match(number).Success ||
+                new Regex("^\\+240[0-9]{6}").Match(number).Success ||
+                new Regex("^\\+687[0-9]{6}").Match(number).Success ||
+                new Regex("^\\+689[0-9]{6}").Match(number).Success;
         }
 
         private static String impreciseFormatNumber(String number, String localNumber)
@@ -139,9 +144,11 @@ namespace libtextsecure.util
 
                 return util.Format(parsedNumber, PhoneNumberFormat.E164);
             }
-            catch (NumberParseException npe) {
+            catch (NumberParseException npe)
+            {
                 return string.Empty;
-            } catch (Exception npe)
+            }
+            catch (Exception npe)
             {
                 return string.Empty;
             }
@@ -149,9 +156,9 @@ namespace libtextsecure.util
             return "+" +
                 countryCode.ReplaceAll("[^0-9]", "").ReplaceAll("^0*", "") +
                 number.ReplaceAll("[^0-9]", "");
-            }
+        }
 
-  public static String getInternationalFormatFromE164(String e164number)
+        public static String getInternationalFormatFromE164(String e164number)
         {
             try
             {

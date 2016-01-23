@@ -16,25 +16,16 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace libtextsecure.push.exceptions
 {
-    class StaleDevicesException : Exception
+    internal class StaleDevicesException : Exception
     {
-        private readonly StaleDevices staleDevices;
+        public StaleDevices StaleDevices { get; internal set; }
 
         public StaleDevicesException(StaleDevices staleDevices)
         {
-            this.staleDevices = staleDevices;
-        }
-
-        public StaleDevices getStaleDevices()
-        {
-            return staleDevices;
+            this.StaleDevices = staleDevices;
         }
     }
 }

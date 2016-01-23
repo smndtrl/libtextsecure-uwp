@@ -18,50 +18,32 @@
 using libtextsecure.crypto;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace libtextsecure.push.exceptions
 {
-    class EncapsulatedExceptions : Exception
+    internal class EncapsulatedExceptions : Exception
     {
 
-        private readonly IList<UntrustedIdentityException> untrustedIdentityExceptions;
-        private readonly IList<UnregisteredUserException>  unregisteredUserExceptions;
-        private readonly IList<NetworkFailureException>    networkExceptions;
+        public IList<UntrustedIdentityException> UntrustedIdentityExceptions { get; internal set; }
+        public IList<UnregisteredUserException> UnregisteredUserExceptions { get; internal set; }
+        public IList<NetworkFailureException> NetworkExceptions { get; internal set; }
 
         public EncapsulatedExceptions(IList<UntrustedIdentityException> untrustedIdentities,
                                       IList<UnregisteredUserException> unregisteredUsers,
                                       IList<NetworkFailureException> networkExceptions)
         {
-            this.untrustedIdentityExceptions = untrustedIdentities;
-            this.unregisteredUserExceptions = unregisteredUsers;
-            this.networkExceptions = networkExceptions;
+            this.UntrustedIdentityExceptions = untrustedIdentities;
+            this.UnregisteredUserExceptions = unregisteredUsers;
+            this.NetworkExceptions = networkExceptions;
         }
 
         public EncapsulatedExceptions(UntrustedIdentityException e)
         {
-            this.untrustedIdentityExceptions = new List<UntrustedIdentityException>();
-            this.unregisteredUserExceptions = new List<UnregisteredUserException>();
-            this.networkExceptions = new List<NetworkFailureException>();
+            this.UntrustedIdentityExceptions = new List<UntrustedIdentityException>();
+            this.UnregisteredUserExceptions = new List<UnregisteredUserException>();
+            this.NetworkExceptions = new List<NetworkFailureException>();
 
-            this.untrustedIdentityExceptions.Add(e);
-        }
-
-        public IList<UntrustedIdentityException> getUntrustedIdentityExceptions()
-        {
-            return untrustedIdentityExceptions;
-        }
-
-        public IList<UnregisteredUserException> getUnregisteredUserExceptions()
-        {
-            return unregisteredUserExceptions;
-        }
-
-        public IList<NetworkFailureException> getNetworkExceptions()
-        {
-            return networkExceptions;
+            this.UntrustedIdentityExceptions.Add(e);
         }
     }
 }

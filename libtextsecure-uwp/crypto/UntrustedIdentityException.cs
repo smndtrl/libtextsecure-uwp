@@ -15,41 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- using libaxolotl;
+using libaxolotl;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace libtextsecure.crypto
 {
     public class UntrustedIdentityException : Exception
     {
 
-        private readonly IdentityKey identityKey;
-        private readonly String e164number;
+        public IdentityKey IdentityKey { get; internal set; }
+        public string E164Number { get; internal set; }
 
-        public UntrustedIdentityException(String s, String e164number, IdentityKey identityKey)
-                  : base(s)
+        public UntrustedIdentityException(string s, string e164Number, IdentityKey identityKey) : base(s)
         {
-            this.e164number = e164number;
-            this.identityKey = identityKey;
+            this.E164Number = e164Number;
+            this.IdentityKey = identityKey;
         }
 
         public UntrustedIdentityException(UntrustedIdentityException e)
-            : this(e.Message, e.getE164Number(), e.getIdentityKey())
+            : this(e.Message, e.E164Number, e.IdentityKey)
         {
-        }
-
-        public IdentityKey getIdentityKey()
-        {
-            return identityKey;
-        }
-
-        public String getE164Number()
-        {
-            return e164number;
         }
 
     }

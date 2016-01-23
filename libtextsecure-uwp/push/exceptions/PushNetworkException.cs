@@ -16,24 +16,17 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace libtextsecure.push.exceptions
 {
     public class PushNetworkException : Exception
     {
-        public PushNetworkException(Exception exception)
-            : base(exception.Message)
+        public PushNetworkException(Exception exception) : base(exception.Message)
         {
         }
 
-        public PushNetworkException(String s)
-            : base(s)
+        public PushNetworkException(string s) : base(s)
         {
         }
-
     }
 }
