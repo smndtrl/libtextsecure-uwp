@@ -144,7 +144,7 @@ namespace libtextsecure.utiltest
      * @author rob@iharder.net
      * @version 2.3.3
      */
-    class Base64
+    internal class Base64
     {
 
         /* ********  P U B L I C   F I E L D S  ******** */

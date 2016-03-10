@@ -96,12 +96,12 @@ namespace libtextsecure
         {
             byte[] content = await createMessageContent(message);
             ulong timestamp = message.getTimestamp();
-            SendMessageResponse response = await sendMessage(recipient, timestamp, content, true);
+            SendMessageResponse response = sendMessage(recipient, timestamp, content, true);
 
             if (response != null && response.getNeedsSync())
             {
                 byte[] syncMessage = createMultiDeviceSentTranscriptContent(content, new May<TextSecureAddress>(recipient), timestamp);
-                await sendMessage(localAddress, timestamp, syncMessage, false);
+                sendMessage(localAddress, timestamp, syncMessage, false);
             }
 
             if (message.isEndSession())
@@ -134,7 +134,7 @@ namespace libtextsecure
                 if (response != null && response.getNeedsSync())
                 {
                     byte[] syncMessage = createMultiDeviceSentTranscriptContent(content, May<TextSecureAddress>.NoValue, timestamp);
-                    await sendMessage(localAddress, timestamp, syncMessage, false);
+                    sendMessage(localAddress, timestamp, syncMessage, false);
                 }
             }
             catch (UntrustedIdentityException e)
@@ -143,24 +143,24 @@ namespace libtextsecure
             }
         }
 
-        public async void sendMessage(TextSecureSyncMessage message)
+        public void sendMessage(TextSecureSyncMessage message)
         {
             byte[] content;
 
             if (message.getContacts().HasValue)
             {
-                content = await createMultiDeviceContactsContent(message.getContacts().ForceGetValue().asStream());
+                content = createMultiDeviceContactsContent(message.getContacts().ForceGetValue().asStream());
             }
             else if (message.getGroups().HasValue)
             {
-                content = await createMultiDeviceGroupsContent(message.getGroups().ForceGetValue().asStream());
+                content = createMultiDeviceGroupsContent(message.getGroups().ForceGetValue().asStream());
             }
             else
             {
                 throw new Exception("Unsupported sync message!");
             }
 
-            await sendMessage(localAddress, KeyHelper.getTime(), content, false);
+            sendMessage(localAddress, KeyHelper.getTime(), content, false);
         }
 
         private async Task<byte[]> createMessageContent(TextSecureDataMessage message)// throws IOException
@@ -180,7 +180,7 @@ namespace libtextsecure
 
             if (message.getGroupInfo().HasValue)
             {
-                builder.SetGroup(await createGroupContent(message.getGroupInfo().ForceGetValue()));
+                builder.SetGroup(createGroupContent(message.getGroupInfo().ForceGetValue()));
             }
 
             if (message.isEndSession())
@@ -190,22 +190,22 @@ namespace libtextsecure
 
             return builder.Build().ToByteArray();
         }
-        private async Task<byte[]> createMultiDeviceContactsContent(TextSecureAttachmentStream contacts)
+        private byte[] createMultiDeviceContactsContent(TextSecureAttachmentStream contacts)
         {
             Content.Builder container = Content.CreateBuilder();
             SyncMessage.Builder builder = SyncMessage.CreateBuilder();
             builder.SetContacts(SyncMessage.Types.Contacts.CreateBuilder()
-                                            .SetBlob(await createAttachmentPointer(contacts)));
+                                            .SetBlob(createAttachmentPointer(contacts)));
 
             return container.SetSyncMessage(builder).Build().ToByteArray();
         }
 
-        private async Task<byte[]> createMultiDeviceGroupsContent(TextSecureAttachmentStream groups)
+        private byte[] createMultiDeviceGroupsContent(TextSecureAttachmentStream groups)
         {
             Content.Builder container = Content.CreateBuilder();
             SyncMessage.Builder builder = SyncMessage.CreateBuilder();
             builder.SetGroups(SyncMessage.Types.Groups.CreateBuilder()
-                                        .SetBlob(await createAttachmentPointer(groups)));
+                                        .SetBlob(createAttachmentPointer(groups)));
 
             return container.SetSyncMessage(builder).Build().ToByteArray();
         }
@@ -260,7 +260,7 @@ namespace libtextsecure
             }
         }
 
-        private async Task<GroupContext> createGroupContent(TextSecureGroup group)
+        private GroupContext createGroupContent(TextSecureGroup group)
         {
             GroupContext.Builder builder = GroupContext.CreateBuilder();
             builder.SetId(ByteString.CopyFrom(group.getGroupId()));
@@ -276,7 +276,7 @@ namespace libtextsecure
 
                 if (group.getAvatar().HasValue && group.getAvatar().ForceGetValue().isStream())
                 {
-                    AttachmentPointer pointer = await createAttachmentPointer(group.getAvatar().ForceGetValue().asStream());
+                    AttachmentPointer pointer = createAttachmentPointer(group.getAvatar().ForceGetValue().asStream());
                     builder.SetAvatar(pointer);
                 }
             }
@@ -300,7 +300,7 @@ namespace libtextsecure
             {
                 try
                 {
-                    response = sendMessage(recipients, timestamp, content, legacy);
+                    response =  sendMessage(recipient, timestamp, content, legacy);
                 }
                 catch (UntrustedIdentityException e)
                 {
@@ -319,7 +319,7 @@ namespace libtextsecure
                 }
             }
 
-            if (!(untrustedIdentities.Count == 0) || !(unregisteredUsers.Count == 0) || !(networkExceptions.Count == 0))
+            if (untrustedIdentities.Count != 0 || unregisteredUsers.Count != 0 || networkExceptions.Count != 0)
             {
                 throw new EncapsulatedExceptions(untrustedIdentities, unregisteredUsers, networkExceptions);
             }
@@ -327,14 +327,15 @@ namespace libtextsecure
             return response;
         }
 
-        private async Task<SendMessageResponse> sendMessage(TextSecureAddress recipient, ulong timestamp, byte[] content, bool legacy)
+        private SendMessageResponse sendMessage(TextSecureAddress recipient, ulong timestamp, byte[] content, bool legacy)
         {
             for (int i = 0; i < 3; i++)
             {
                 try
                 {
-                    OutgoingPushMessageList messages = await getEncryptedMessages(socket, recipient, timestamp, content, legacy);
-                    return await socket.sendMessage(messages);
+                    OutgoingPushMessageList messages = getEncryptedMessages(socket, recipient, timestamp, content,
+                        legacy);
+                    return socket.sendMessage(messages).Result;
                 }
                 catch (MismatchedDevicesException mde)
                 {
@@ -346,12 +347,16 @@ namespace libtextsecure
                     //Log.w(TAG, ste);
                     handleStaleDevices(recipient, ste.StaleDevices);
                 }
+                catch (PushNetworkException e)
+                {
+                    
+                }
             }
 
             throw new Exception("Failed to resolve conflicts after 3 attempts!");
         }
 
-        private async Task<IList<AttachmentPointer>> createAttachmentPointers(May<LinkedList<TextSecureAttachment>> attachments)
+        private IList<AttachmentPointer> createAttachmentPointers(May<LinkedList<TextSecureAttachment>> attachments)
         {
             IList<AttachmentPointer> pointers = new List<AttachmentPointer>();
 
@@ -366,14 +371,14 @@ namespace libtextsecure
                 if (attachment.isStream())
                 {
                     Debug.WriteLine("Found attachment, creating pointer...", TAG);
-                    pointers.Add(await createAttachmentPointer(attachment.asStream()));
+                    pointers.Add(createAttachmentPointer(attachment.asStream()));
                 }
             }
 
             return pointers;
         }
 
-        private async Task<AttachmentPointer> createAttachmentPointer(TextSecureAttachmentStream attachment)
+        private AttachmentPointer createAttachmentPointer(TextSecureAttachmentStream attachment)
         {
             byte[] attachmentKey = Util.getSecretBytes(64);
             PushAttachmentData attachmentData = new PushAttachmentData(attachment.getContentType(),
@@ -381,7 +386,7 @@ namespace libtextsecure
                                                                        attachment.getLength(),
                                                                        attachmentKey);
 
-            ulong attachmentId = await socket.sendAttachment(attachmentData);
+            ulong attachmentId = socket.sendAttachment(attachmentData).Result;
 
             var builder = AttachmentPointer.CreateBuilder()
                                     .SetContentType(attachment.getContentType())
@@ -398,7 +403,7 @@ namespace libtextsecure
         }
 
 
-        private async Task<OutgoingPushMessageList> getEncryptedMessages(PushServiceSocket socket,
+        private OutgoingPushMessageList getEncryptedMessages(PushServiceSocket socket,
                                                    TextSecureAddress recipient,
                                                    ulong timestamp,
                                                    byte[] plaintext,
@@ -408,18 +413,18 @@ namespace libtextsecure
 
             if (!recipient.Equals(localAddress))
             {
-                messages.Add(await getEncryptedMessage(socket, recipient, TextSecureAddress.DEFAULT_DEVICE_ID, plaintext, legacy));
+                messages.Add(getEncryptedMessage(socket, recipient, TextSecureAddress.DEFAULT_DEVICE_ID, plaintext, legacy));
             }
 
             foreach (uint deviceId in store.GetSubDeviceSessions(recipient.getNumber()))
             {
-                messages.Add(await getEncryptedMessage(socket, recipient, deviceId, plaintext, legacy));
+                messages.Add(getEncryptedMessage(socket, recipient, deviceId, plaintext, legacy));
             }
 
             return new OutgoingPushMessageList(recipient.getNumber(), timestamp, recipient.getRelay().HasValue ? recipient.getRelay().ForceGetValue() : null, messages);
         }
 
-        private async Task<OutgoingPushMessage> getEncryptedMessage(PushServiceSocket socket, TextSecureAddress recipient, uint deviceId, byte[] plaintext, bool legacy)
+        private OutgoingPushMessage getEncryptedMessage(PushServiceSocket socket, TextSecureAddress recipient, uint deviceId, byte[] plaintext, bool legacy)
         {
             AxolotlAddress axolotlAddress = new AxolotlAddress(recipient.getNumber(), deviceId);
             TextSecureCipher cipher = new TextSecureCipher(localAddress, store);
@@ -428,7 +433,7 @@ namespace libtextsecure
             {
                 try
                 {
-                    List<PreKeyBundle> preKeys = await socket.getPreKeys(recipient, deviceId);
+                    List<PreKeyBundle> preKeys = socket.getPreKeys(recipient, deviceId).Result;
 
                     foreach (PreKeyBundle preKey in preKeys)
                     {

@@ -134,7 +134,7 @@ namespace libtextsecure.util
 
         public static String formatE164(String countryCode, String number)
         {
-            if (countryCode == string.Empty || number == string.Empty) return string.Empty;
+            if (countryCode == string.Empty || number == string.Empty || number.Length < 3) return string.Empty;
             try
             {
                 PhoneNumberUtil util = PhoneNumberUtil.GetInstance();

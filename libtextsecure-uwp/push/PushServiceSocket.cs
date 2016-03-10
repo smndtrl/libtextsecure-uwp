@@ -30,6 +30,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation.Diagnostics;
 using Windows.Web.Http;
 using libtextsecure.messages.multidevice;
 using Windows.Web.Http.Filters;
@@ -180,14 +181,25 @@ namespace libtextsecure.push
         {
             try
             {
-                String responseText = await makeRequest(String.Format(MESSAGE_PATH, bundle.getDestination()), "PUT", JsonUtil.toJson(bundle));
+                String responseText =
+                    await
+                        makeRequest(String.Format(MESSAGE_PATH, bundle.getDestination()), "PUT", JsonUtil.toJson(bundle));
 
                 if (responseText == null) return new SendMessageResponse(false);
                 else return JsonUtil.fromJson<SendMessageResponse>(responseText);
             }
-            catch (Exception nfe)
+            catch (NotFoundException nfe)
             {
                 throw new UnregisteredUserException(bundle.getDestination(), nfe);
+            }
+            catch (PushNetworkException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Unexpected exeption");
+                throw;
             }
         }
 
@@ -428,7 +440,7 @@ namespace libtextsecure.push
                 String response = await makeRequest(string.Format(DIRECTORY_VERIFY_PATH, contactToken), "GET", null);
                 return JsonUtil.fromJson<ContactTokenDetails>(response);
             }
-            catch (/*NotFound*/Exception nfe)
+            catch (NotFoundException nfe)
             {
                 return null;
             }
@@ -514,7 +526,7 @@ namespace libtextsecure.push
             }
         }*/
 
-        private async Task<String> makeRequest(String urlFragment, String method, String body)
+        /*private async Task<String> makeRequest(String urlFragment, String method, String body)
         //throws NonSuccessfulResponseCodeException, PushNetworkException
         {
             try
@@ -527,17 +539,18 @@ namespace libtextsecure.push
             {
                 throw new PushNetworkException(ioe);
             }
-        }
+        }*/
 
-        private async Task<String> makeBaseRequest(String urlFragment, String method, String body)
+        private async Task<String> makeRequest(String urlFragment, String method, String body)
         {
-            HttpResponseMessage connection = await getConnection(urlFragment, method, body);
+            HttpResponseMessage connection;
             HttpStatusCode responseCode;
             String responseMessage;
             String response;
 
             try
             {
+                connection = await getConnection(urlFragment, method, body);
                 responseCode = connection.StatusCode;
                 responseMessage = await connection.Content.ReadAsStringAsync();
             }
@@ -564,13 +577,14 @@ namespace libtextsecure.push
                     {
                         throw new PushNetworkException(e);
                     }
+
                     throw new MismatchedDevicesException(JsonUtil.fromJson<MismatchedDevices>(response));
                 case HttpStatusCode.Gone: // 410
                     try
                     {
-                        response = await connection.Content.ReadAsStringAsync();  //Util.readFully(connection.getErrorStream());
+                        response = await connection.Content.ReadAsStringAsync();
                     }
-                    catch (/*IO*/Exception e)
+                    catch ( /*IO*/Exception e)
                     {
                         throw new PushNetworkException(e);
                     }
@@ -578,7 +592,7 @@ namespace libtextsecure.push
                 case HttpStatusCode.LengthRequired://411:
                     try
                     {
-                        response = await connection.Content.ReadAsStringAsync();  //Util.readFully(connection.getErrorStream());
+                        response = await connection.Content.ReadAsStringAsync();
                     }
                     catch (Exception e)
                     {
@@ -604,35 +618,12 @@ namespace libtextsecure.push
         {
             try
             {
-                /*SSLContext context = SSLContext.getInstance("TLS");
-                context.init(null, trustManagers, null);*/
 
                 Uri url = new Uri(String.Format("{0}{1}", serviceUrl, urlFragment));
-                //Log.w(TAG, "Push service URL: " + serviceUrl);
-                //Log.w(TAG, "Opening URL: " + url);
-                var filter = new HttpBaseProtocolFilter();
-
-                if (HttpClientCertificatePolicyState.Policy == HttpClientCertificatePolicy.DevelopmentMode)
-                {
-                    filter.IgnorableServerCertificateErrors.Add(Windows.Security.Cryptography.Certificates.ChainValidationResult.Expired);
-                    filter.IgnorableServerCertificateErrors.Add(Windows.Security.Cryptography.Certificates.ChainValidationResult.Untrusted);
-                    filter.IgnorableServerCertificateErrors.Add(Windows.Security.Cryptography.Certificates.ChainValidationResult.InvalidName);
-                }
-
-                //HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-
-                HttpClient connection = new HttpClient(filter);
-
-                /*if (ENFORCE_SSL)
-                {
-                    ((HttpsURLConnection)connection).setSSLSocketFactory(context.getSocketFactory());
-                    ((HttpsURLConnection)connection).setHostnameVerifier(new StrictHostnameVerifier());
-                }*/
+                HttpClient connection = new HttpClient();
 
                 var headers = connection.DefaultRequestHeaders;
 
-                //connection.setRequestMethod(method);
-                //headers.Add("Content-Type", "application/json");
 
                 if (credentialsProvider.GetPassword() != null)
                 {
@@ -644,12 +635,6 @@ namespace libtextsecure.push
                     headers.Add("X-Signal-Agent", userAgent);
                 }
 
-                /*if (body != null)
-                {
-                    connection.setDoOutput(true);
-                }*/
-
-                //connection.connect();
 
                 HttpStringContent content;
                 if (body != null)

@@ -67,7 +67,7 @@ namespace libtextsecure.crypto
                 default: throw new Exception("Bad type: " + message.getType());
             }
 
-            return new OutgoingPushMessage(type, destination.getDeviceId(), remoteRegistrationId, legacy ? body : null, legacy ? null : body);
+            return new OutgoingPushMessage(type, destination.DeviceId, remoteRegistrationId, legacy ? body : null, legacy ? null : body);
         }
 
 
